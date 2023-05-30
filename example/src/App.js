@@ -69,7 +69,7 @@ function toTimestamp(t, comma = false) {
 const mode = process.env.NODE_ENV === 'development' ? 'debug' : 'release'
 
 const modelURL =
-  'https://huggingface.co/datasets/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin'
+  'https://huggingface.co/datasets/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin'
 const sampleURL =
   'https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav'
 
@@ -154,7 +154,7 @@ export default function App() {
               } else {
                 options = {
                   // Use the bundle resource (Need add model to Xcode project / Android assets)
-                  filePath: 'ggml-base.en.bin',
+                  filePath: 'ggml-tiny.en.bin',
                   isBundleAsset: true,
                 }
               }
@@ -205,10 +205,6 @@ export default function App() {
               const { result, segments } = await promise
               const endTime = Date.now()
               setTranscibeResult(
-                `Transcribed result: ${result}\n` +
-                  `Transcribed in ${endTime - startTime}ms in ${mode} mode` +
-                  `\n` +
-                  `Segments:` +
                   `\n${segments
                     .map(
                       (segment) =>
@@ -249,12 +245,6 @@ export default function App() {
                 subscribe((evt) => {
                   const { isCapturing, data, processTime, recordingTime } = evt
                   setTranscibeResult(
-                    `Realtime transcribing: ${isCapturing ? 'ON' : 'OFF'}\n` +
-                      `Result: ${data.result}\n\n` +
-                      `Process time: ${processTime}ms\n` +
-                      `Recording time: ${recordingTime}ms` +
-                      `\n` +
-                      `Segments:` +
                       `\n${data.segments
                         .map(
                           (segment) =>
@@ -275,16 +265,9 @@ export default function App() {
             }}
           >
             <Text style={styles.buttonText}>
-              {stopTranscribe?.stop ? 'Stop' : 'Realtime'}
+              {stopTranscribe?.stop ? 'Stop' : 'Start'}
             </Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.logContainer}>
-          {logs.map((msg, index) => (
-            <Text key={index} style={styles.logText}>
-              {msg}
-            </Text>
-          ))}
         </View>
         {transcibeResult && (
           <View style={styles.logContainer}>
@@ -294,27 +277,7 @@ export default function App() {
 
         <TouchableOpacity
           style={[styles.button, styles.buttonClear]}
-          onPress={async () => {
-            if (!whisperContext) return
-            await whisperContext.release()
-            setWhisperContext(null)
-            log('Released context')
-          }}
-        >
-          <Text style={styles.buttonText}>Release Context</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonClear]}
-          onPress={() => {
-            setLogs([])
-            setTranscibeResult('')
-          }}
-        >
-          <Text style={styles.buttonText}>Clear Logs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonClear]}
-          title="Clear Download files"
+          title="Clear"
           onPress={async () => {
             await RNFS.unlink(fileDir).catch(() => {})
             log('Deleted files')
